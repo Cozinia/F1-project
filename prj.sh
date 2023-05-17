@@ -1,7 +1,7 @@
 #!/bin/bash
-
 add(){
-	id=3
+	id=$(tail -n 1 formula1.csv | cut -d',' -f 1) #returneaza ultimul ID din fisierul csv
+	(( id++ ))
 	read -p "Nume: " nume
 	read -p "Numar: " numar
 	read -p "Echipa: " echipa
@@ -14,13 +14,28 @@ add(){
 }
 
 display(){
-	echo "Drivers: "
+
+	printf "|%-5s|%-5s|%-20s|%-20s|%-20s|%-15s|%-10s|\n" "ID" "Numar" "Nume" "Echipa" "Punctaj general" "Nume cursa" "Punctaj cursa" 
+	printf "|-----|-----|--------------------|--------------------|--------------------|---------------|-------------|\n"
 	while IFS="," read ID Numar Nume Echipa PunctajGeneral NumeCursa PunctajCursa PozitieGrid
 		do
-			printf "%-5s|%-5s|%-20s|%-20s|%-20s|%-20s|%-20s|%-20s|\n" "ID" "Numar" "Nume" "Echipa" "Punctaj general" "Nume cursa" "Punctaj cursa" "Pozitie grid" 
-			printf "%-5s|%-5s|%-20s|%-20s|%-20s|%-20s|%-20s|%-20s|\n" "$ID" "$Numar" "$Nume" "$Echipa" "$PunctajGeneral" "$NumeCursa" "$PunctajCursa" "$PozitieGrid"
+			printf "|%-5s|%-5s|%-20s|%-20s|%-20s|%-15s|%-13s|\n" "$ID" "$Numar" "$Nume" "$Echipa" "$PunctajGeneral" "$NumeCursa" "$PunctajCursa" 
+			printf "|-----|-----|--------------------|--------------------|--------------------|---------------|-------------|\n"
 
 		done < <(tail -n +2 "formula1.csv")
+}
+
+modify(){
+
+	echo "Modify..."
+
+}
+
+delete(){
+
+	read -p "Introduceti ID-ul pilotului: "  deleteID
+	
+
 }
 
 
@@ -42,6 +57,8 @@ i=10
 
 		case $i in
 			1)add;;
+			2)modify;;
+			3)delete;;
 			4)display;;
 		esac
 	done
