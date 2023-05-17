@@ -15,20 +15,27 @@ add(){
 
 display(){
 
-	printf "|%-5s|%-5s|%-20s|%-20s|%-20s|%-15s|%-10s|\n" "ID" "Numar" "Nume" "Echipa" "Punctaj general" "Nume cursa" "Punctaj cursa" 
-	printf "|-----|-----|--------------------|--------------------|--------------------|---------------|-------------|\n"
+	printf "|%-5s|%-5s|%-20s|%-20s|%-20s|%-15s|%-10s|%-12s|\n" "ID" "Numar" "Nume" "Echipa" "Punctaj general" "Nume cursa" "Punctaj cursa" "PozitieGrid" 
+	printf "|-----|-----|--------------------|--------------------|--------------------|---------------|-------------|------------|\n"
 	while IFS="," read ID Numar Nume Echipa PunctajGeneral NumeCursa PunctajCursa PozitieGrid
 		do
-			printf "|%-5s|%-5s|%-20s|%-20s|%-20s|%-15s|%-13s|\n" "$ID" "$Numar" "$Nume" "$Echipa" "$PunctajGeneral" "$NumeCursa" "$PunctajCursa" 
-			printf "|-----|-----|--------------------|--------------------|--------------------|---------------|-------------|\n"
+			printf "|%-5s|%-5s|%-20s|%-20s|%-20s|%-15s|%-13s|%-12s|\n" "$ID" "$Numar" "$Nume" "$Echipa" "$PunctajGeneral" "$NumeCursa" "$PunctajCursa" "$PozitieGrid" 
+			printf "|-----|-----|--------------------|--------------------|--------------------|---------------|-------------|------------|\n"
+
 
 		done < <(tail -n +2 "formula1.csv")
 }
 
-modify(){
-
-	echo "Modify..."
-
+modify() {
+    # aici modific datele despre un driver dat
+    read -p "Scrie ID-ul pilotului pe care vrei sa îl modifici: " driverID
+    if grep -q "^$driverID," formula1.csv; then
+        read -p "Introdu noile informații în ordinea dat(Numar, Nume, Echipa, Punctaj general, Nume cursa, Punctaj cursa, Pozitie grid): " numar nume echipa punctajGeneral numeCursa punctajCursa pozitieGrid
+        sed -i "s/^$driverID,[^,]*/$driverID,$numar,$nume,$echipa,$punctajGeneral,$numeCursa,$punctajCursa,$pozitieGrid/" formula1.csv
+        echo "Am modificat pilotul!!"
+    else
+        echo "Nu exista pilot cu id-ul $driverID :("
+    fi
 }
 
 delete(){
