@@ -1,4 +1,8 @@
 #!/bin/bash
+
+original="formula1.csv"
+temp_file="temp_formula.csv"
+
 add(){
 	id=$(tail -n 1 formula1.csv | cut -d',' -f 1) #returneaza ultimul ID din fisierul csv
 	(( id++ ))
@@ -27,21 +31,55 @@ display(){
 }
 
 modify() {
-    # aici modific datele despre un driver dat
-    read -p "Scrie ID-ul pilotului pe care vrei sa îl modifici: " driverID
-    if grep -q "^$driverID," formula1.csv; then
-        read -p "Introdu noile informații în ordinea dat(Numar, Nume, Echipa, Punctaj general, Nume cursa, Punctaj cursa, Pozitie grid): " numar nume echipa punctajGeneral numeCursa punctajCursa pozitieGrid
-        sed -i "s/^$driverID,[^,]*/$driverID,$numar,$nume,$echipa,$punctajGeneral,$numeCursa,$punctajCursa,$pozitieGrid/" formula1.csv
-        echo "Am modificat pilotul!!"
-    else
-        echo "Nu exista pilot cu id-ul $driverID :("
-    fi
+	
+	#aici modific datele despre un driver dat
+	read -p "Scrie ID-ul pilotului pe care vrei sa îl modifici: " driverID
+	driver_Line=$(grep -n "^$driverID," "$original" | cut -d ':' -f1) #search for the column of the driver
+	echo "$driver_Line"
+	option=10
+	while [ $option -ne 0 ]
+		do
+			echo "Alegeti optiunea dorita:"
+			echo "1.Schimba numele"
+			echo "2.Schimba numarul"
+			echo "3.Schimba echipa"
+			echo "4.Schimba punctajul in clasamentul general"
+			echo "5.Schimba numele cursei"
+			echo "6.Schimba rezultatul cursei"
+			echo "7.Schimba pozitia de pe grid"
+			echo "0.Inapoi"
+			read option
+			if [ $option -gt 7 ]
+				then
+					echo "Introduceti o optiune valida!"
+			fi
+		
+		contents=$(awk -F',' -v line="$driver_Line" 'NR == line {print}' "$original") #extract the contents of the driver's line
+	IFS=',' read -r ID Numar Nume Echipa PunctajGeneral NumeCursa PunctajCursa PozitieGrid <<< "$contents" #place the contents of the variable "contents" in those fields
+		
+		case $option in
+			1)read -p "Nume: " Nume;;
+			2)read -p "Numar: " Numar;;
+			3)read -p "Ehipa: " Echipa;;
+			4)read -p "Care este punctajul pilotului in clasamentul general? " PunctajGeneral;;
+			5)read -p "Care este noul nume al cursei? " NumeCursa;;
+			6)read -p "Care este noul rezultat al cursei? " PunctajCursa;;
+			7)read -p "Pozitia de pe grid: " PozitieGrid;;
+
+		esac
+		
+		sed -i "${driver_Line}s/.*/$ID,$Numar,$Nume,$Echipa,$PunctajGeneral,$NumeCursa,$PunctajCursa,$PozitieGrid/" "$original" #replace the line with the new values
+		
+		done
 }
+
+
 
 delete(){
 
 	read -p "Introduceti ID-ul pilotului: "  deleteID
-	
+	driver_Line=$(grep -n "^$deleteID," "$original" | cut -d ':' -f1) #search for the column of the driver
+	sed -i "${driver_Line}d" "$original"
 
 }
 
@@ -49,17 +87,17 @@ delete(){
 i=10
  while [ $i -ne 0 ]
 	do
-		echo "Choose option: "
-		echo "1.Add driver"
-		echo "2.Modify driver"
-		echo "3.Delete driver"
-		echo "4.Display drivers"
-		echo "0.Exit program"
+		echo "Alegeti optiunea dorita:"
+		echo "1.Adauga pilot"
+		echo "2.Modifica pilot"
+		echo "3.Sterge un pilot"
+		echo "4.Afiseaza pilotii"
+		echo "0.Iesire"
 		read i
 
 		if [ $i -gt 5 ]
 			then
-				echo "Chose a valid option"
+				echo "Introduceti o optiune valida!"
 		fi
 
 		case $i in
