@@ -83,6 +83,76 @@ delete(){
 
 }
 
+sortDriverStandings(){
+	
+	sorted_data=$(tail -n +2 "$original" | sort -t',' -k5 -n -r) #Sort the CSV file starting from line 2
+	printf "|%-5s|%-5s|%-20s|%-20s|%-20s|%-15s|%-10s|%-12s|\n" "ID" "Numar" "Nume" "Echipa" "Punctaj general" "Nume cursa" "Punctaj cursa" "PozitieGrid" 
+	printf "|-----|-----|--------------------|--------------------|--------------------|---------------|-------------|------------|\n"
+	while IFS= read -r line
+		 do
+    			IFS=',' read -r ID Numar Nume Echipa PunctajGeneral NumeCursa PunctajCursa PozitieGrid <<< "$line"
+    			printf "|%-5s|%-5s|%-20s|%-20s|%-20s|%-15s|%-13s|%-12s|\n"  "$ID" "$Numar" "$Nume" "$Echipa" "$PunctajGeneral" "$NumeCursa" "$PunctajCursa" "$PozitieGrid"
+    			printf "|-----|-----|--------------------|--------------------|--------------------|---------------|-------------|------------|\n"
+		done <<< "$sorted_data"
+}
+
+sortLastRacePoints(){
+	sorted_data=$(tail -n +2 "$original" | sort -t',' -k7 -n -r) #Sort the CSV file starting from line 2
+	printf "|%-5s|%-5s|%-20s|%-20s|%-20s|%-15s|%-10s|%-12s|\n" "ID" "Numar" "Nume" "Echipa" "Punctaj general" "Nume cursa" "Punctaj cursa" "PozitieGrid" 
+	printf "|-----|-----|--------------------|--------------------|--------------------|---------------|-------------|------------|\n"
+	while IFS= read -r line
+		 do
+    			IFS=',' read -r ID Numar Nume Echipa PunctajGeneral NumeCursa PunctajCursa PozitieGrid <<< "$line"
+    			printf "|%-5s|%-5s|%-20s|%-20s|%-20s|%-15s|%-13s|%-12s|\n"  "$ID" "$Numar" "$Nume" "$Echipa" "$PunctajGeneral" "$NumeCursa" "$PunctajCursa" "$PozitieGrid"
+    			printf "|-----|-----|--------------------|--------------------|--------------------|---------------|-------------|------------|\n"
+		done <<< "$sorted_data"
+}
+
+sortNumber(){
+	sorted_data=$(tail -n +2 "$original" | sort -t',' -k2 -n -r) #Sort the CSV file starting from line 2
+	printf "|%-5s|%-5s|%-20s|%-20s|%-20s|%-15s|%-10s|%-12s|\n" "ID" "Numar" "Nume" "Echipa" "Punctaj general" "Nume cursa" "Punctaj cursa" "PozitieGrid" 
+	printf "|-----|-----|--------------------|--------------------|--------------------|---------------|-------------|------------|\n"
+	while IFS= read -r line
+		 do
+    			IFS=',' read -r ID Numar Nume Echipa PunctajGeneral NumeCursa PunctajCursa PozitieGrid <<< "$line"
+    			printf "|%-5s|%-5s|%-20s|%-20s|%-20s|%-15s|%-13s|%-12s|\n"  "$ID" "$Numar" "$Nume" "$Echipa" "$PunctajGeneral" "$NumeCursa" "$PunctajCursa" "$PozitieGrid"
+    			printf "|-----|-----|--------------------|--------------------|--------------------|---------------|-------------|------------|\n"
+		done <<< "$sorted_data"
+}
+
+sortGridPosition(){
+	sorted_data=$(tail -n +2 "$original" | sort -t',' -k8 -n ) #Sort the CSV file starting from line 2
+	printf "|%-5s|%-5s|%-20s|%-20s|%-20s|%-15s|%-10s|%-12s|\n" "ID" "Numar" "Nume" "Echipa" "Punctaj general" "Nume cursa" "Punctaj cursa" "PozitieGrid" 
+	printf "|-----|-----|--------------------|--------------------|--------------------|---------------|-------------|------------|\n"
+	while IFS= read -r line
+		 do
+    			IFS=',' read -r ID Numar Nume Echipa PunctajGeneral NumeCursa PunctajCursa PozitieGrid <<< "$line"
+    			printf "|%-5s|%-5s|%-20s|%-20s|%-20s|%-15s|%-13s|%-12s|\n"  "$ID" "$Numar" "$Nume" "$Echipa" "$PunctajGeneral" "$NumeCursa" "$PunctajCursa" "$PozitieGrid"
+    			printf "|-----|-----|--------------------|--------------------|--------------------|---------------|-------------|------------|\n"
+		done <<< "$sorted_data"
+}
+
+sortDrivers(){
+sortOption=10
+	while [ $sortOption -ne 0 ]
+		do
+			echo "Alegeti optiunea dorita:"
+			echo "1.Sorteaza dupa clasamentul general"
+			echo "2.Sorteaza dupa clasamentul ultimei curse"
+			echo "3.Sorteaza dupa numar"
+			echo "4.Sorteaza dupa pozitia pe grid"
+			echo "0.Inapoi"
+			read sortOption
+			
+			case $sortOption in
+				1)sortDriverStandings;;
+				2)sortLastRacePoints;;
+				3)sortNumber;;
+				4)sortGridPosition;;
+			esac
+		done
+}
+
 
 i=10
  while [ $i -ne 0 ]
@@ -92,10 +162,11 @@ i=10
 		echo "2.Modifica pilot"
 		echo "3.Sterge un pilot"
 		echo "4.Afiseaza pilotii"
+		echo "5.Sorteaza pilotii"
 		echo "0.Iesire"
 		read i
 
-		if [ $i -gt 5 ]
+		if [ $i -gt 6 ]
 			then
 				echo "Introduceti o optiune valida!"
 		fi
@@ -105,5 +176,6 @@ i=10
 			2)modify;;
 			3)delete;;
 			4)display;;
+			5)sortDrivers;;
 		esac
 	done
