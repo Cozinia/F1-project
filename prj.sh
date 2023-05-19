@@ -2,6 +2,8 @@
 
 original="formula1.csv"
 temp_file="temp_formula.csv"
+sortColumn=0
+reverseOption="-r"
 
 add(){
 	id=$(tail -n 1 formula1.csv | cut -d',' -f 1) #returneaza ultimul ID din fisierul csv
@@ -83,9 +85,9 @@ delete(){
 
 }
 
-sortDriverStandings(){
+sortDriversFunc(){
 	
-	sorted_data=$(tail -n +2 "$original" | sort -t',' -k5 -n -r) #Sort the CSV file starting from line 2
+	sorted_data=$(tail -n +2 "$original" | sort -t',' -k${sortColumn} -n $reverseOption) #Sort the CSV file starting from line 2
 	printf "|%-5s|%-5s|%-20s|%-20s|%-20s|%-15s|%-10s|%-12s|\n" "ID" "Numar" "Nume" "Echipa" "Punctaj general" "Nume cursa" "Punctaj cursa" "PozitieGrid" 
 	printf "|-----|-----|--------------------|--------------------|--------------------|---------------|-------------|------------|\n"
 	while IFS= read -r line
@@ -96,43 +98,7 @@ sortDriverStandings(){
 		done <<< "$sorted_data"
 }
 
-sortLastRacePoints(){
-	sorted_data=$(tail -n +2 "$original" | sort -t',' -k7 -n -r) #Sort the CSV file starting from line 2
-	printf "|%-5s|%-5s|%-20s|%-20s|%-20s|%-15s|%-10s|%-12s|\n" "ID" "Numar" "Nume" "Echipa" "Punctaj general" "Nume cursa" "Punctaj cursa" "PozitieGrid" 
-	printf "|-----|-----|--------------------|--------------------|--------------------|---------------|-------------|------------|\n"
-	while IFS= read -r line
-		 do
-    			IFS=',' read -r ID Numar Nume Echipa PunctajGeneral NumeCursa PunctajCursa PozitieGrid <<< "$line"
-    			printf "|%-5s|%-5s|%-20s|%-20s|%-20s|%-15s|%-13s|%-12s|\n"  "$ID" "$Numar" "$Nume" "$Echipa" "$PunctajGeneral" "$NumeCursa" "$PunctajCursa" "$PozitieGrid"
-    			printf "|-----|-----|--------------------|--------------------|--------------------|---------------|-------------|------------|\n"
-		done <<< "$sorted_data"
-}
-
-sortNumber(){
-	sorted_data=$(tail -n +2 "$original" | sort -t',' -k2 -n -r) #Sort the CSV file starting from line 2
-	printf "|%-5s|%-5s|%-20s|%-20s|%-20s|%-15s|%-10s|%-12s|\n" "ID" "Numar" "Nume" "Echipa" "Punctaj general" "Nume cursa" "Punctaj cursa" "PozitieGrid" 
-	printf "|-----|-----|--------------------|--------------------|--------------------|---------------|-------------|------------|\n"
-	while IFS= read -r line
-		 do
-    			IFS=',' read -r ID Numar Nume Echipa PunctajGeneral NumeCursa PunctajCursa PozitieGrid <<< "$line"
-    			printf "|%-5s|%-5s|%-20s|%-20s|%-20s|%-15s|%-13s|%-12s|\n"  "$ID" "$Numar" "$Nume" "$Echipa" "$PunctajGeneral" "$NumeCursa" "$PunctajCursa" "$PozitieGrid"
-    			printf "|-----|-----|--------------------|--------------------|--------------------|---------------|-------------|------------|\n"
-		done <<< "$sorted_data"
-}
-
-sortGridPosition(){
-	sorted_data=$(tail -n +2 "$original" | sort -t',' -k8 -n ) #Sort the CSV file starting from line 2
-	printf "|%-5s|%-5s|%-20s|%-20s|%-20s|%-15s|%-10s|%-12s|\n" "ID" "Numar" "Nume" "Echipa" "Punctaj general" "Nume cursa" "Punctaj cursa" "PozitieGrid" 
-	printf "|-----|-----|--------------------|--------------------|--------------------|---------------|-------------|------------|\n"
-	while IFS= read -r line
-		 do
-    			IFS=',' read -r ID Numar Nume Echipa PunctajGeneral NumeCursa PunctajCursa PozitieGrid <<< "$line"
-    			printf "|%-5s|%-5s|%-20s|%-20s|%-20s|%-15s|%-13s|%-12s|\n"  "$ID" "$Numar" "$Nume" "$Echipa" "$PunctajGeneral" "$NumeCursa" "$PunctajCursa" "$PozitieGrid"
-    			printf "|-----|-----|--------------------|--------------------|--------------------|---------------|-------------|------------|\n"
-		done <<< "$sorted_data"
-}
-
-sortDrivers(){
+menuSortDrivers(){
 sortOption=10
 	while [ $sortOption -ne 0 ]
 		do
@@ -144,15 +110,26 @@ sortOption=10
 			echo "0.Inapoi"
 			read sortOption
 			
+			if [ $i -gt 5 ]
+			then
+				echo "Introduceti o optiune valida!"
+			fi
+			
 			case $sortOption in
-				1)sortDriverStandings;;
-				2)sortLastRacePoints;;
-				3)sortNumber;;
-				4)sortGridPosition;;
+				1)sortColumn=5;;
+				2)sortColumn=7;;
+				3)sortColumn=2;;
+				4)sortColumn=8
+				 reverseOption=" "
+				 ;;
 			esac
+			
+			if [ $sortOption -ne 0 ]
+				then
+				 	sortDriversFunc
+				fi
 		done
 }
-
 
 i=10
  while [ $i -ne 0 ]
@@ -176,6 +153,6 @@ i=10
 			2)modify;;
 			3)delete;;
 			4)display;;
-			5)sortDrivers;;
+			5)menuSortDrivers;;
 		esac
 	done
