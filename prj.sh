@@ -2,6 +2,7 @@
 
 original="formula1.csv"
 temp_file="temp_formula.csv"
+users_file="users.csv"
 sortColumn=0
 reverseOption="-r"
 
@@ -16,7 +17,7 @@ add(){
 	read -p "Punctaj cursa: " punctajCursa
 	read -p "Pozitie grid: " pozitieGrid
 	echo "$id,$numar,$nume,$echipa,$punctajGeneral,$numeCursa,$punctajCursa,$pozitieGrid" >> formula1.csv
-	echo "Driver saved in csv"
+	echo "$nume a fost salvat cu succes!"
 }
 
 display(){
@@ -34,10 +35,9 @@ display(){
 
 modify() {
 	
-	#aici modific datele despre un driver dat
+	#aici se modifica datele despre un driver dat
 	read -p "Scrie ID-ul pilotului pe care vrei sa îl modifici: " driverID
-	driver_Line=$(grep -n "^$driverID," "$original" | cut -d ':' -f1) #search for the column of the driver
-	echo "$driver_Line"
+	driver_Line=$(grep -n "^$driverID," "$original" | cut -d ':' -f1) #se cauta linia pe care se afla pilotul
 	option=10
 	while [ $option -ne 0 ]
 		do
@@ -56,8 +56,8 @@ modify() {
 					echo "Introduceti o optiune valida!"
 			fi
 		
-		contents=$(awk -F',' -v line="$driver_Line" 'NR == line {print}' "$original") #extract the contents of the driver's line
-	IFS=',' read -r ID Numar Nume Echipa PunctajGeneral NumeCursa PunctajCursa PozitieGrid <<< "$contents" #place the contents of the variable "contents" in those fields
+		contents=$(awk -F',' -v line="$driver_Line" 'NR == line {print}' "$original") #se extrage continutul liniei pilotul
+	IFS=',' read -r ID Numar Nume Echipa PunctajGeneral NumeCursa PunctajCursa PozitieGrid <<< "$contents" #se plaseaza continutul variabilei "contents" in aceste campuri
 		
 		case $option in
 			1)read -p "Nume: " Nume;;
@@ -70,7 +70,7 @@ modify() {
 
 		esac
 		
-		sed -i "${driver_Line}s/.*/$ID,$Numar,$Nume,$Echipa,$PunctajGeneral,$NumeCursa,$PunctajCursa,$PozitieGrid/" "$original" #replace the line with the new values
+		sed -i "${driver_Line}s/.*/$ID,$Numar,$Nume,$Echipa,$PunctajGeneral,$NumeCursa,$PunctajCursa,$PozitieGrid/" "$original" #se inlocuieste linia cu noile valori date de utilizator
 		
 		done
 }
@@ -80,14 +80,14 @@ modify() {
 delete(){
 
 	read -p "Introduceti ID-ul pilotului: "  deleteID
-	driver_Line=$(grep -n "^$deleteID," "$original" | cut -d ':' -f1) #search for the column of the driver
+	driver_Line=$(grep -n "^$deleteID," "$original" | cut -d ':' -f1) #se cauta linia pe care se afla pilotul
 	sed -i "${driver_Line}d" "$original"
 
 }
 
 sortDriversFunc(){
 	
-	sorted_data=$(tail -n +2 "$original" | sort -t',' -k${sortColumn} -n $reverseOption) #Sort the CSV file starting from line 2
+	sorted_data=$(tail -n +2 "$original" | sort -t',' -k${sortColumn} -n $reverseOption) #se sorteaza fizierul CSV incepand de la cea de-a doua linie
 	printf "|%-5s|%-5s|%-20s|%-20s|%-20s|%-15s|%-10s|%-12s|\n" "ID" "Numar" "Nume" "Echipa" "Punctaj general" "Nume cursa" "Punctaj cursa" "PozitieGrid" 
 	printf "|-----|-----|--------------------|--------------------|--------------------|---------------|-------------|------------|\n"
 	while IFS= read -r line
@@ -110,7 +110,7 @@ sortOption=10
 			echo "0.Inapoi"
 			read sortOption
 			
-			if [ $i -gt 5 ]
+			if [ $sortOption -gt 5 ]
 			then
 				echo "Introduceti o optiune valida!"
 			fi
@@ -131,9 +131,30 @@ sortOption=10
 		done
 }
 
-i=10
- while [ $i -ne 0 ]
-	do
+readUsersFromFile(){
+read -p "Username: " inputUsername
+read -p "Password: " inputPassword
+while IFS="," read ID Email Parola
+		do
+			echo "Username: $Email Password: $Parola"
+			if [ "$inputUsername" = "$Email" ]
+				then
+					if [ "$inputPassword" = "$Parola" ]
+						then	
+							return 1
+						else
+							return 0
+					fi
+				
+			fi	
+		done < <(tail -n +2 "$users_file")
+		return 0
+}
+
+userMenu(){
+    p=10
+    while [ $p -ne 0 ]
+    	do
 		echo "Alegeti optiunea dorita:"
 		echo "1.Adauga pilot"
 		echo "2.Modifica pilot"
@@ -141,18 +162,69 @@ i=10
 		echo "4.Afiseaza pilotii"
 		echo "5.Sorteaza pilotii"
 		echo "0.Iesire"
-		read i
+		read p
 
-		if [ $i -gt 6 ]
-			then
-				echo "Introduceti o optiune valida!"
+		if [ $p -gt 6 ]; then
+		    echo "Introduceti o optiune valida!"
 		fi
 
-		case $i in
-			1)add;;
-			2)modify;;
-			3)delete;;
-			4)display;;
-			5)menuSortDrivers;;
-		esac
-	done
+		 case $p in
+		    1) add ;;
+		    2) modify ;;
+		    3) delete ;;
+		    4) display ;;
+		    5) menuSortDrivers ;;
+        esac
+    done
+
+}
+
+loginPage(){
+	readUsersFromFile
+	if [ $? -eq 1 ]
+		then
+			userMenu
+		else
+			echo "Wrong username or password!"
+			loginPage
+	fi
+					
+}
+
+createAccount(){
+	id=$(tail -n 1 users.csv | cut -d',' -f 1) #returneaza ultimul ID din fisierul csv
+	(( id++ ))
+	read -p "Email: " email
+	read -p "Parola: " parola
+	echo "$id,$email,$parola" >> users.csv
+	echo "Utilizatorul a fost salvat cu succes!"
+	loginPage
+
+}
+
+mainMenu(){
+	userOption=0
+	echo "Bun venit in lumea F1!"
+	echo "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⢀⣀⣀⣀⠀⠀⠀⠀⢀⣀⣀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⢸⣿⣿⡿⢀⣠⣴⣾⣿⣿⣿⣿⣇⡀⠀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⢸⣿⣿⠟⢋⡙⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣶⣿⡿⠓⡐⠒⢶⣤⣄⡀⠀⠀
+⠀⠸⠿⠇⢰⣿⣿⡆⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀⣿⣿⡷⠈⣿⣿⣉⠁⠀
+⠀⠀⠀⠀⠀⠈⠉⠀⠈⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠀⠈⠉⠁⠀⠈⠉⠉⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
+	echo "Alegeti optiunea dorita:"
+	echo "1.Am cont"
+	echo "2.Vreau cont"
+	read userOption
+	case $userOption in
+		1)loginPage;;
+		2)createAccount;;
+	esac
+		
+}
+
+mainMenu
