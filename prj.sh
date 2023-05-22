@@ -7,6 +7,7 @@ reverseOption="-r"
 regex_email="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
 regex_number="^[0-9]+$"
 regex_password="^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[@$!%*?&]).{8,}$" #lungime intre 3 si 32 de caractere
+loggedUserID=0
 
 function checkRegexString() {
   local input="$1"
@@ -97,19 +98,19 @@ add(){
 	done
 
 	# Datele introduse de utilizator vor fi salvate in fisierul formula1.csv
-	echo "$id,$numar,$nume,$echipa,$punctajGeneral,$numeCursa,$punctajCursa,$pozitieGrid" >> formula1.csv
+	echo "$id,$numar,$nume,$echipa,$punctajGeneral,$numeCursa,$punctajCursa,$pozitieGrid,$loggedUserID" >> formula1.csv
 	echo "$nume a fost salvat cu succes!"
 
 }
 
 display(){
 
-	printf "|%-5s|%-5s|%-20s|%-20s|%-20s|%-15s|%-10s|%-12s|\n" "ID" "Numar" "Nume" "Echipa" "Punctaj general" "Nume cursa" "Punctaj cursa" "PozitieGrid" 
-	printf "|-----|-----|--------------------|--------------------|--------------------|---------------|-------------|------------|\n"
-	while IFS="," read ID Numar Nume Echipa PunctajGeneral NumeCursa PunctajCursa PozitieGrid
+	printf "|%-5s|%-5s|%-20s|%-20s|%-20s|%-15s|%-10s|%-12s|%-13s|\n" "ID" "Numar" "Nume" "Echipa" "Punctaj general" "Nume cursa" "Punctaj cursa" "PozitieGrid" "ID utilizator"
+	printf "|-----|-----|--------------------|--------------------|--------------------|---------------|-------------|------------|-------------|\n"
+	while IFS="," read ID Numar Nume Echipa PunctajGeneral NumeCursa PunctajCursa PozitieGrid UltimaModifID
 		do
-			printf "|%-5s|%-5s|%-20s|%-20s|%-20s|%-15s|%-13s|%-12s|\n" "$ID" "$Numar" "$Nume" "$Echipa" "$PunctajGeneral" "$NumeCursa" "$PunctajCursa" "$PozitieGrid" 
-			printf "|-----|-----|--------------------|--------------------|--------------------|---------------|-------------|------------|\n"
+			printf "|%-5s|%-5s|%-20s|%-20s|%-20s|%-15s|%-13s|%-12s|%-13s|\n" "$ID" "$Numar" "$Nume" "$Echipa" "$PunctajGeneral" "$NumeCursa" "$PunctajCursa" "$PozitieGrid" "$UltimaModifID"
+			printf "|-----|-----|--------------------|--------------------|--------------------|---------------|-------------|------------|-------------|\n"
 
 
 		done < <(tail -n +2 "formula1.csv")
@@ -139,7 +140,7 @@ modify() {
 
         if [[ $option =~ $regex_modify ]]; then
             contents=$(awk -F',' -v line="$driver_Line" 'NR == line {print}' "$original") # se extrage continutul liniei pilotul
-            IFS=',' read -r ID Numar Nume Echipa PunctajGeneral NumeCursa PunctajCursa PozitieGrid <<<"$contents" # se plaseaza continutul variabilei "contents" in aceste campuri
+            IFS=',' read -r ID Numar Nume Echipa PunctajGeneral NumeCursa PunctajCursa PozitieGrid UltimaModifID <<<"$contents" # se plaseaza continutul variabilei "contents" in aceste campuri
 
             case $option in
                 1)
@@ -213,8 +214,8 @@ modify() {
                     PozitieGrid="$newPozitieGrid"
                     ;;
             esac
-
-            sed -i "${driver_Line}s/.*/$ID,$Numar,$Nume,$Echipa,$PunctajGeneral,$NumeCursa,$PunctajCursa,$PozitieGrid/" "$original" # se inlocuieste linia cu noile valori date de utilizator
+	    UltimaModifID=$loggedUserID
+            sed -i "${driver_Line}s/.*/$ID,$Numar,$Nume,$Echipa,$PunctajGeneral,$NumeCursa,$PunctajCursa,$PozitieGrid,$UltimaModifID/" "$original" # se inlocuieste linia cu noile valori date de utilizator
         else
             echo "Introduceti o optiune valida!"
         fi
@@ -240,13 +241,13 @@ delete() {
 sortDriversFunc(){
 	
 	sorted_data=$(tail -n +2 "$original" | sort -t',' -k${sortColumn} -n $reverseOption) #se sorteaza fizierul CSV incepand de la cea de-a doua linie
-	printf "|%-5s|%-5s|%-20s|%-20s|%-20s|%-15s|%-10s|%-12s|\n" "ID" "Numar" "Nume" "Echipa" "Punctaj general" "Nume cursa" "Punctaj cursa" "PozitieGrid" 
-	printf "|-----|-----|--------------------|--------------------|--------------------|---------------|-------------|------------|\n"
+	printf "|%-5s|%-5s|%-20s|%-20s|%-20s|%-15s|%-10s|%-12s|%-13s|\n" "ID" "Numar" "Nume" "Echipa" "Punctaj general" "Nume cursa" "Punctaj cursa" "PozitieGrid" "ID utilizator"
+	printf "|-----|-----|--------------------|--------------------|--------------------|---------------|-------------|------------|-------------|\n"
 	while IFS= read -r line
 		 do
-    			IFS=',' read -r ID Numar Nume Echipa PunctajGeneral NumeCursa PunctajCursa PozitieGrid <<< "$line"
-    			printf "|%-5s|%-5s|%-20s|%-20s|%-20s|%-15s|%-13s|%-12s|\n"  "$ID" "$Numar" "$Nume" "$Echipa" "$PunctajGeneral" "$NumeCursa" "$PunctajCursa" "$PozitieGrid"
-    			printf "|-----|-----|--------------------|--------------------|--------------------|---------------|-------------|------------|\n"
+    			IFS=',' read -r ID Numar Nume Echipa PunctajGeneral NumeCursa PunctajCursa PozitieGrid UltimaModifID <<< "$line"
+    			printf "|%-5s|%-5s|%-20s|%-20s|%-20s|%-15s|%-13s|%-12s|%-13s|\n" "$ID" "$Numar" "$Nume" "$Echipa" "$PunctajGeneral" "$NumeCursa" "$PunctajCursa" "$PozitieGrid" "$UltimaModifID"
+			printf "|-----|-----|--------------------|--------------------|--------------------|---------------|-------------|------------|-------------|\n"
 		done <<< "$sorted_data"
 }
 
@@ -294,7 +295,8 @@ if [[ "$inputUsername" =~ $regex_email ]] #se verifica daca input-ul introdus de
 						if [ "$inputUsername" = "$Email" ]
 							then
 								if [ "$inputPassword" = "$Parola" ]
-									then	
+									then
+										loggedUserID=$ID	
 										return 1
 									else
 										return 0
@@ -313,36 +315,9 @@ if [[ "$inputUsername" =~ $regex_email ]] #se verifica daca input-ul introdus de
 
 }
 
-userMenu(){
-    p=10
-    regex_userMenu="^[0-6]$"
-    while [ $p -ne 0 ]
-    	do
-		echo "Alegeti optiunea dorita:"
-		echo "1.Adauga pilot"
-		echo "2.Modifica pilot"
-		echo "3.Sterge un pilot"
-		echo "4.Afiseaza pilotii"
-		echo "5.Sorteaza pilotii"
-		echo "6.Delogare"
-		echo "0.Iesire"
-		read p
-		if [[ $p =~ $regex_userMenu ]]
-			then
-				 case $p in
-				    1) add ;;
-				    2) modify ;;
-				    3) delete ;;
-				    4) display ;;
-				    5) menuSortDrivers ;;
-				    6) mainMenu;;
-				esac
-			else
-				echo "Introduceti o optiune valida!"
-				userMenu
-		fi
-    done
-
+logoffUser(){
+	loggedUserID=0
+	mainMenu
 }
 
 loginPage(){
@@ -376,6 +351,42 @@ createAccount(){
 		    createAccount
 	fi
 }
+
+userMenu(){
+    p=10
+    regex_userMenu="^[0-6]$"
+    while [ $p -ne 0 ]
+    	do
+		echo "Alegeti optiunea dorita:"
+		echo "1.Adauga pilot"
+		echo "2.Modifica pilot"
+		echo "3.Sterge un pilot"
+		echo "4.Afiseaza pilotii"
+		echo "5.Sorteaza pilotii"
+		echo "6.Delogare"
+		echo "0.Iesire"
+		read p
+		if [[ $p =~ $regex_userMenu ]]
+			then
+				 case $p in
+				    1) add ;;
+				    2) modify ;;
+				    3) delete ;;
+				    4) display ;;
+				    5) menuSortDrivers ;;
+				    6) logoffUser;;
+				esac
+			else
+				echo "Introduceti o optiune valida!"
+				userMenu
+		fi
+    done
+
+}
+
+
+
+
 
 mainMenu(){
 	userOption=0
