@@ -96,7 +96,7 @@ add(){
 	  checkRegexNumber "$pozitieGrid"
 	done
 
-	# Save the data to a file or perform further processing
+	# Datele introduse de utilizator vor fi salvate in fisierul formula1.csv
 	echo "$id,$numar,$nume,$echipa,$punctajGeneral,$numeCursa,$punctajCursa,$pozitieGrid" >> formula1.csv
 	echo "$nume a fost salvat cu succes!"
 
@@ -146,7 +146,7 @@ modify() {
                     read -p "Nume: " newName
                     checkRegexString "$newName"
                     while [ $? -eq 0 ]; do
-                    	echo "Introduceti o optiune valida!"
+                    	echo "Introduceti o optiune valida!"S
                         read -p "Nume: " newName
                         checkRegexString "$newName"
                     done
@@ -302,6 +302,8 @@ if [[ "$inputUsername" =~ $regex_email ]] #se verifica daca input-ul introdus de
 							
 						fi	
 					done < <(tail -n +2 "$users_file")
+				else
+					echo "Email-ul sau parola nu sunt valide!"
 		fi
 	else
 		 echo "Introduceti o adresa de email valida!"
@@ -313,7 +315,7 @@ if [[ "$inputUsername" =~ $regex_email ]] #se verifica daca input-ul introdus de
 
 userMenu(){
     p=10
-    regex_userMenu="^[0-5]$"
+    regex_userMenu="^[0-6]$"
     while [ $p -ne 0 ]
     	do
 		echo "Alegeti optiunea dorita:"
@@ -322,6 +324,7 @@ userMenu(){
 		echo "3.Sterge un pilot"
 		echo "4.Afiseaza pilotii"
 		echo "5.Sorteaza pilotii"
+		echo "6.Delogare"
 		echo "0.Iesire"
 		read p
 		if [[ $p =~ $regex_userMenu ]]
@@ -332,6 +335,7 @@ userMenu(){
 				    3) delete ;;
 				    4) display ;;
 				    5) menuSortDrivers ;;
+				    6) mainMenu;;
 				esac
 			else
 				echo "Introduceti o optiune valida!"
