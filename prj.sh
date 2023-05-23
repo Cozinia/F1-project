@@ -117,7 +117,7 @@ display(){
 }
 
 modify() {
-    regex_modify="^[1-7]$"
+    regex_modify="^[0-7]$"
 
     # aici se modifica datele despre un driver dat
     read -p "Scrie ID-ul pilotului pe care vrei sa îl modifici: " driverID
@@ -136,7 +136,7 @@ modify() {
         echo "6.Schimba rezultatul cursei"
         echo "7.Schimba pozitia de pe grid"
         echo "0.Inapoi"
-        read -p "Option: " option
+        read -p "Optiune: " option
 
         if [[ $option =~ $regex_modify ]]; then
             contents=$(awk -F',' -v line="$driver_Line" 'NR == line {print}' "$original") # se extrage continutul liniei pilotul
@@ -214,12 +214,17 @@ modify() {
                     PozitieGrid="$newPozitieGrid"
                     ;;
             esac
+            if [ $option -ne 0 ]
+            	then
+            		echo "Pilotul a fost modificat cu succes!"
+            fi
 	    UltimaModifID=$loggedUserID
             sed -i "${driver_Line}s/.*/$ID,$Numar,$Nume,$Echipa,$PunctajGeneral,$NumeCursa,$PunctajCursa,$PozitieGrid,$UltimaModifID/" "$original" # se inlocuieste linia cu noile valori date de utilizator
         else
             echo "Introduceti o optiune valida!"
         fi
     done
+    
 }
 
 
@@ -253,7 +258,7 @@ sortDriversFunc(){
 
 menuSortDrivers(){
 sortOption=10
-regex_sort="^[1-4]$"
+regex_sort="^[0-4]$"
 	while [ $sortOption -ne 0 ]
 		do
 			echo "Alegeti optiunea dorita:"
@@ -262,7 +267,7 @@ regex_sort="^[1-4]$"
 			echo "3.Sorteaza dupa numar"
 			echo "4.Sorteaza dupa pozitia pe grid"
 			echo "0.Inapoi"
-			read sortOption
+			 read -p "Optiune: " sortOption
 			
 			if [[ $sortOption =~ $regex_sort ]]
 				then
@@ -274,7 +279,10 @@ regex_sort="^[1-4]$"
 						 reverseOption=" "
 						 ;;
 					esac
-					sortDriversFunc
+					if [ $sortOption -ne 0 ]
+						then
+							sortDriversFunc
+					fi
 				else
 					echo "Introduceti o optiune valida!"
 			fi
@@ -287,7 +295,7 @@ readUsersFromFile(){
 read -p "Username: " inputUsername
 if [[ "$inputUsername" =~ $regex_email ]] #se verifica daca input-ul introdus de utilizator respecta pattern-ul regex al unei adrese de email
 	then
-		read -p "Password: " inputPassword
+		read -sp "Password: " inputPassword
 		if echo "$inputPassword" | grep -qP '^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[@$!%*?&]).{8,}$'; then # verifica daca inputPassword respecta pattern-ul regex al unei parole
 			while IFS="," read ID Email Parola
 					do
@@ -339,7 +347,7 @@ createAccount(){
 	read -p "Email: " email
 	if [[ "$email" =~ $regex_email ]] #se verifica daca input-ul introdus de utilizator respecta pattern-ul regex al unei adrese de email
 		then
-		        read -p "Parola: " parola
+		        read -sp "Parola: " parola
 		        if echo "$parola" | grep -qP '^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[@$!%*?&]).{8,32}$'; then # verifica daca inputPassword respecta pattern-ul regex al unei parole
 				echo "$id,$email,$parola" >> users.csv
 				echo "Utilizatorul a fost salvat cu succes!"
@@ -365,7 +373,7 @@ userMenu(){
 		echo "5.Sorteaza pilotii"
 		echo "6.Delogare"
 		echo "0.Iesire"
-		read p
+		 read -p "Optiune: " p
 		if [[ $p =~ $regex_userMenu ]]
 			then
 				 case $p in
@@ -404,7 +412,7 @@ mainMenu(){
 	echo "Alegeti optiunea dorita:"
 	echo "1.Am cont"
 	echo "2.Vreau cont"
-	read userOption
+	 read -p "Optiune: " userOption
 	if [[ $userOption =~ $regex_mainMenu ]]
 		then
 			case $userOption in
